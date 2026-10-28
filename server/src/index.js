@@ -21,20 +21,38 @@ const uploadsDir = path.join(__dirname, '../public/uploads')
 const app = express()
 const PORT = process.env.PORT || 4000
 
+// Percayai reverse proxy (seperti Vite dev proxy atau Cloudflare Tunnel)
+app.set('trust proxy', 1)
+
 const allowedOrigins = (process.env.CLIENT_ORIGIN || 'http://localhost:5173,http://localhost:5174')
   .split(',')
   .map(o => o.trim())
 
 app.use(cors({
   origin: (origin, callback) => {
+    // 1. Izinkan request tanpa origin (seperti request internal same-origin, curl, server-to-server)
     if (!origin) return callback(null, true)
-    // Di mode non-production, izinkan semua port localhost (5173, 5174, dll)
-    if (process.env.NODE_ENV !== 'production' && /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) {
+
+    // 2. Izinkan semua port localhost & 127.0.0.1
+    if (/^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) {
       return callback(null, true)
     }
+
+    // 3. Izinkan domain Cloudflare Tunnel (*.trycloudflare.com)
+    if (/^https?:\/\/([a-z0-9-]+\.)?trycloudflare\.com$/.test(origin)) {
+      return callback(null, true)
+    }
+
+    // 4. Izinkan domain yang tercantum di CLIENT_ORIGIN
     if (allowedOrigins.includes(origin)) {
       return callback(null, true)
     }
+
+    // 5. Di mode development, fleksibel izinkan untuk memudahkan uji coba
+    if (process.env.NODE_ENV !== 'production') {
+      return callback(null, true)
+    }
+
     callback(new Error(`Origin ${origin} tidak diizinkan oleh CORS`))
   },
   credentials: true,

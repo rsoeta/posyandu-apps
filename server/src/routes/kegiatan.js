@@ -374,19 +374,40 @@ router.get('/share/:id', async (req, res) => {
     const rawDesc = item.deskripsi.replace(/(\r\n|\n|\r)/gm, ' ')
     const excerpt = rawDesc.length > 150 ? rawDesc.substring(0, 147) + '...' : rawDesc
 
-    // Tentukan URL absolut gambar & halaman
-    const host = req.get('host')
-    const protocol = req.protocol === 'https' || req.headers['x-forwarded-proto'] === 'https' ? 'https' : 'http'
+    // Tentukan URL absolut gambar & halaman publik untuk media sosial (WhatsApp, FB, Telegram)
+    const rawFwdHost = req.headers['x-forwarded-host']
+    let host = rawFwdHost ? rawFwdHost.split(',')[0].trim() : req.get('host') || 'localhost:5173'
+
+    // Jika host masih localhost:4000 (port internal Express), periksa origin atau referer publik
+    if (host.includes(':4000') || host.includes('127.0.0.1')) {
+      if (req.headers['origin']) {
+        try { host = new URL(req.headers['origin']).host } catch {}
+      } else if (req.headers['referer']) {
+        try { host = new URL(req.headers['referer']).host } catch {}
+      }
+    }
+
+    const isHttps =
+      req.secure ||
+      req.headers['x-forwarded-proto'] === 'https' ||
+      host.includes('trycloudflare.com') ||
+      process.env.NODE_ENV === 'production'
+    const protocol = isHttps ? 'https' : 'http'
     const baseUrl = `${protocol}://${host}`
 
     const imageUrl = item.foto
-      ? (item.foto.startsWith('http') ? item.foto : `${baseUrl}${item.foto}`)
+      ? (item.foto.startsWith('http')
+          ? item.foto
+          : `${baseUrl}${item.foto.startsWith('/') ? item.foto : `/${item.foto}`}`)
       : `${baseUrl}/favicon.svg`
 
-    const pageUrl = `${baseUrl}/kegiatan/share/${item.id}`
-    const clientAppUrl = (process.env.CLIENT_ORIGIN?.split(',')[0] || `${protocol}://localhost:5173`) + `/kegiatan/${item.id}`
+    const imgExt = (imageUrl.split('.').pop() || '').toLowerCase()
+    const mimeType = imgExt === 'png' ? 'image/png' : imgExt === 'webp' ? 'image/webp' : 'image/jpeg'
 
-    // Render HTML dengan lengkap Open Graph meta tags
+    const pageUrl = `${baseUrl}/kegiatan/share/${item.id}`
+    const clientAppUrl = `${baseUrl}/kegiatan/${item.id}`
+
+    // Render HTML dengan lengkap Open Graph & Twitter Card meta tags
     const html = `<!DOCTYPE html>
 <html lang="id">
 <head>
@@ -397,12 +418,19 @@ router.get('/share/:id', async (req, res) => {
 
   <!-- Open Graph / Facebook / WhatsApp -->
   <meta property="og:type" content="article" />
+  <meta property="og:site_name" content="Posyandu Ceria ${escapeHtml(item.posyandu_name || 'Desa')}" />
   <meta property="og:url" content="${pageUrl}" />
   <meta property="og:title" content="${escapeHtml(item.judul)}" />
   <meta property="og:description" content="${escapeHtml(excerpt)}" />
   <meta property="og:image" content="${imageUrl}" />
   <meta property="og:image:secure_url" content="${imageUrl}" />
-  <meta property="og:site_name" content="Posyandu Ceria ${escapeHtml(item.posyandu_name || '')}" />
+  <meta property="og:image:type" content="${mimeType}" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="${escapeHtml(item.judul)}" />
+
+  <!-- Fallback untuk WhatsApp & Telegram Scraper -->
+  <link rel="image_src" href="${imageUrl}" />
 
   <!-- Twitter / X -->
   <meta name="twitter:card" content="summary_large_image" />

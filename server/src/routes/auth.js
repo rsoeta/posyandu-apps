@@ -49,10 +49,11 @@ router.post(
         process.env.JWT_SECRET,
         { expiresIn: '12h' }
       )
+      const isHttps = req.secure || req.headers['x-forwarded-proto'] === 'https' || process.env.NODE_ENV === 'production'
       res.cookie('token', token, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+        secure: isHttps,
+        sameSite: 'lax',
         maxAge: 12 * 60 * 60 * 1000,
       })
       res.json({
@@ -125,10 +126,11 @@ router.post(
 )
 
 router.post('/logout', (req, res) => {
+  const isHttps = req.secure || req.headers['x-forwarded-proto'] === 'https' || process.env.NODE_ENV === 'production'
   res.clearCookie('token', {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+    secure: isHttps,
+    sameSite: 'lax',
   })
   res.json({ ok: true })
 })

@@ -14,6 +14,7 @@ import {
 import { api, mapApiError } from '../lib/api'
 import { showError, showSuccess, showConfirm } from '../utils/swal'
 import { useAuth } from '../contexts/AuthContext'
+import { getImageUrl } from '../utils/imageUrl'
 import ShareModal from '../components/ShareModal'
 
 export default function ActivityDetail() {
@@ -26,7 +27,12 @@ export default function ActivityDetail() {
   const [notFound, setNotFound] = useState(false)
   const [shareOpen, setShareOpen] = useState(false)
 
-  const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:4000'
+  const apiBase =
+    import.meta.env.VITE_API_URL && import.meta.env.VITE_API_URL !== ''
+      ? import.meta.env.VITE_API_URL
+      : typeof window !== 'undefined'
+      ? window.location.origin
+      : ''
 
   useEffect(() => {
     let mounted = true
@@ -97,11 +103,7 @@ export default function ActivityDetail() {
     )
   }
 
-  const imageUrl = item.foto
-    ? item.foto.startsWith('http')
-      ? item.foto
-      : `${apiBase}${item.foto}`
-    : null
+  const imageUrl = getImageUrl(item.foto)
 
   const canManage = Boolean(user && (isAdmin || user.posyandu_id === item.posyandu_id))
 

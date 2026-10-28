@@ -9,6 +9,7 @@ import {
   Link as LinkIcon,
   Globe,
 } from '@phosphor-icons/react'
+import { getAbsoluteImageUrl } from '../utils/imageUrl'
 
 export default function ShareModal({ item, onClose }) {
   const [copied, setCopied] = useState(false)
@@ -20,9 +21,15 @@ export default function ShareModal({ item, onClose }) {
   const excerpt = cleanDesc.length > 120 ? cleanDesc.substring(0, 117) + '...' : cleanDesc
 
   // Tentukan URL publik Open Graph
-  // Menggunakan rute backend /kegiatan/share/:id agar bot WhatsApp/FB merender OG tags dengan sempurna
-  const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:4000'
-  const shareUrl = `${apiBase}/kegiatan/share/${item.id}`
+  // Menggunakan origin aktif (seperti domain Cloudflare Tunnel) agar bot WhatsApp/FB merender OG tags dengan sempurna
+  const apiBase =
+    import.meta.env.VITE_API_URL && import.meta.env.VITE_API_URL !== ''
+      ? import.meta.env.VITE_API_URL
+      : typeof window !== 'undefined'
+      ? window.location.origin
+      : 'http://localhost:5173'
+  const cacheBuster = item.updated_at ? `?v=${new Date(item.updated_at).getTime()}` : ''
+  const shareUrl = `${apiBase}/kegiatan/share/${item.id}${cacheBuster}`
   const directAppUrl = `${window.location.origin}/kegiatan/${item.id}`
 
   // Format pesan untuk WhatsApp
@@ -55,11 +62,7 @@ export default function ShareModal({ item, onClose }) {
   }
 
   // URL gambar absolut
-  const imageUrl = item.foto
-    ? item.foto.startsWith('http')
-      ? item.foto
-      : `${apiBase}${item.foto}`
-    : null
+  const imageUrl = getAbsoluteImageUrl(item.foto)
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-fadeIn">

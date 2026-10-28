@@ -12,11 +12,13 @@ import Schedule from './pages/Schedule'
 import AdminPosyandu from './pages/AdminPosyandu'
 import ActivitiesList from './pages/ActivitiesList'
 import ActivityDetail from './pages/ActivityDetail'
+import PwaInstallPrompt from './components/PwaInstallPrompt'
 
 export default function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
+        <PwaInstallPrompt />
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />

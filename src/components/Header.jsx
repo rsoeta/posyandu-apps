@@ -1,6 +1,7 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { House, Baby, CalendarBlank, SignOut, Buildings, Camera } from '@phosphor-icons/react'
+import { House, Baby, CalendarBlank, SignOut, Buildings, Camera, DownloadSimple } from '@phosphor-icons/react'
 import { useAuth } from '../contexts/AuthContext'
+import { usePwaInstall } from '../hooks/usePwaInstall'
 
 const navItems = [
   { to: '/', label: 'Beranda', icon: House },
@@ -13,6 +14,7 @@ export default function Header() {
   const location = useLocation()
   const navigate = useNavigate()
   const { posyanduName, isAdmin, signOut, user } = useAuth()
+  const { canInstall, installApp } = usePwaInstall()
 
   const handleSignOut = async () => {
     await signOut()
@@ -68,6 +70,17 @@ export default function Header() {
               <Buildings size={20} /> Admin
             </Link>
           )}
+          {canInstall && (
+            <button
+              onClick={installApp}
+              className="flex items-center gap-1.5 px-3 min-h-[42px] rounded-xl font-semibold bg-purple-50 text-purple hover:bg-purple-100 transition-colors text-sm cursor-pointer"
+              title="Pasang Posyandu Ceria ke HP / Komputer"
+            >
+              <DownloadSimple size={18} weight="bold" />
+              <span>Pasang App</span>
+            </button>
+          )}
+
           {user ? (
             <button
               onClick={handleSignOut}
@@ -96,6 +109,17 @@ export default function Header() {
               <Buildings size={22} />
             </Link>
           )}
+          {canInstall && (
+            <button
+              onClick={installApp}
+              className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-purple-50 text-purple hover:bg-purple-100 transition-colors cursor-pointer"
+              title="Pasang Posyandu Ceria ke HP / Komputer"
+              aria-label="Pasang Aplikasi"
+            >
+              <DownloadSimple size={20} weight="bold" />
+            </button>
+          )}
+
           {user ? (
             <button
               onClick={handleSignOut}

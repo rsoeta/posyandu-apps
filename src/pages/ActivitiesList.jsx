@@ -19,6 +19,7 @@ import { api, mapApiError } from '../lib/api'
 import { showError, showSuccess, showConfirm } from '../utils/swal'
 import { useAuth } from '../contexts/AuthContext'
 import { applyWatermark } from '../utils/watermark'
+import { getImageUrl } from '../utils/imageUrl'
 import ShareModal from '../components/ShareModal'
 
 export default function ActivitiesList() {
@@ -54,7 +55,12 @@ export default function ActivitiesList() {
     foto: '', // base64 or url
   })
 
-  const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:4000'
+  const apiBase =
+    import.meta.env.VITE_API_URL && import.meta.env.VITE_API_URL !== ''
+      ? import.meta.env.VITE_API_URL
+      : typeof window !== 'undefined'
+      ? window.location.origin
+      : ''
 
   const loadData = async () => {
     setLoading(true)
@@ -347,11 +353,7 @@ export default function ActivitiesList() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredActivities.map((k) => {
-            const imageUrl = k.foto
-              ? k.foto.startsWith('http')
-                ? k.foto
-                : `${apiBase}${k.foto}`
-              : null
+            const imageUrl = getImageUrl(k.foto)
 
             return (
               <div
@@ -360,14 +362,25 @@ export default function ActivitiesList() {
               >
                 <div>
                   {/* Foto dengan Watermark */}
-                  <div className="relative w-full h-48 bg-gray-100 overflow-hidden">
+                  <div className="relative w-full h-48 bg-gray-100 overflow-hidden flex items-center justify-center">
                     {imageUrl ? (
-                      <img
-                        src={imageUrl}
-                        alt={k.judul}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                        loading="lazy"
-                      />
+                      <>
+                        <img
+                          src={imageUrl}
+                          alt={k.judul}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          loading="lazy"
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none'
+                            const fallback = e.currentTarget.parentElement?.querySelector('.img-fallback')
+                            if (fallback) fallback.classList.remove('hidden')
+                          }}
+                        />
+                        <div className="img-fallback hidden w-full h-full flex flex-col items-center justify-center text-gray-300 gap-1 bg-gray-50">
+                          <ImageIcon size={36} />
+                          <span className="text-xs">Foto Tidak Tersedia</span>
+                        </div>
+                      </>
                     ) : (
                       <div className="w-full h-full flex flex-col items-center justify-center text-gray-300 gap-1">
                         <ImageIcon size={36} />
@@ -659,13 +672,7 @@ export default function ActivitiesList() {
                 {form.foto && (
                   <div className="mt-2 relative rounded-xl overflow-hidden border border-purple-200 max-h-56 bg-black flex items-center justify-center">
                     <img
-                      src={
-                        form.foto.startsWith('data:')
-                          ? form.foto
-                          : form.foto.startsWith('http')
-                          ? form.foto
-                          : `${apiBase}${form.foto}`
-                      }
+                      src={getImageUrl(form.foto)}
                       alt="Watermarked Preview"
                       className="max-h-56 object-contain"
                     />
