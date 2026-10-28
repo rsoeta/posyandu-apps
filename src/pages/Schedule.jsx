@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { CalendarBlank, Clock, MapPin } from '@phosphor-icons/react'
-import { supabase } from '../lib/supabase'
-import { handleSupabaseError } from '../utils/errors'
+import { api, mapApiError } from '../lib/api'
 import { showError } from '../utils/swal'
 
 export default function Schedule() {
@@ -11,16 +10,15 @@ export default function Schedule() {
   useEffect(() => {
     let mounted = true
     const load = async () => {
-      const { data, error } = await supabase
-        .from('jadwal')
-        .select('id, judul, tanggal, waktu, tempat')
-        .order('tanggal', { ascending: true })
-      if (error) {
-        showError('Gagal Memuat', handleSupabaseError(error).message)
-      } else if (mounted) {
-        setSchedules(data || [])
+      try {
+        const res = await api('/api/jadwal')
+        if (mounted) setSchedules(res.data || [])
+      } catch (e) {
+        const mapped = mapApiError(e)
+        showError('Gagal Memuat', mapped.message)
+      } finally {
+        if (mounted) setLoading(false)
       }
-      if (mounted) setLoading(false)
     }
     load()
     return () => { mounted = false }

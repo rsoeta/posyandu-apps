@@ -1,54 +1,89 @@
 # Posyandu Ceria — Aplikasi Pencatatan Posyandu Tingkat Desa
 
-Frontend React/Vite (deploy ke Vercel) + Supabase (PostgreSQL + Auth) dengan Multi-Posyandu RBAC via Row Level Security (RLS).
+Frontend React/Vite (deploy ke Vercel) + Backend REST API (Node/Express) + MySQL, dengan Multi-Posyandu Object-Level RBAC.
 
 ## Arsitektur
 
 ```
-┌──────────────────┐        HTTPS        ┌──────────────────────┐
-│  React + Vite    │ ──────────────────► │  Supabase (BaaS)     │
-│  (Vercel)        │  anon key + JWT     │  - Auth (email/pw)   │
-│  - AuthContext   │ ◄────────────────── │  - PostgreSQL + RLS  │
-│  - ProtectedRoute│                     │  - Object-level RBAC │
-└──────────────────┘                     └──────────────────────┘
+┌──────────────────┐   HTTPS/JSON   ┌──────────────────────┐
+│  React + Vite    │ ─────────────► │  Express REST API    │
+│  (Vercel)        │  cookie (JWT)  │  (Node.js)           │
+│  - AuthContext   │ ◄───────────── │  - Object-Level RBAC │
+│  - ProtectedRoute│                │  - bcrypt + JWT      │
+└──────────────────┘                └──────────┬───────────┘
+                                               │
+                                               ▼
+                                       ┌──────────────┐
+                                       │   MySQL      │
+                                       │  (UUID PKs)  │
+                                       └──────────────┘
 ```
 
 ### Role & Akses
-- **Admin Desa**: akses penuh seluruh posyandu di desa, CRUD master Posyandu, assign Kader.
-- **Kader Posyandu**: hanya dapat melihat/mengubah data balita & pengukuran di Posyandu tempat ia ditugaskan (`posyandu_id` cocok dengan profil).
+- **Admin Desa**: akses penuh, CRUD master Posyandu, assign Kader, lihat seluruh data.
+- **Kader Posyandu**: hanya dapat melihat/mengubah data balita & pengukuran di Posyandu tempat ia ditugaskan.
 
-RBAC ditegakkan di level database melalui RLS. Frontend hanya menampilkan error generik (`403 Forbidden` / `404 Not Found`) tanpa membocorkan struktur tabel.
+RBAC ditegakkan di **setiap endpoint & query** (filter `posyandu_id` eksplisit). Jika Kader mengakses UUID milik posyandu lain, API mengembalikan `404 Not Found` (tanpa membocorkan eksistensi data). Endpoint admin-only mengembalikan `403 Forbidden`.
 
-### Tabel (semua PK UUID v4)
-- `posyandu`, `profiles`, `balita`, `ibu_hamil`, `pengukuran`, `jadwal`.
+### Keamanan
+- Password di-hash dengan **bcrypt**.
+- Autentikasi via **JWT** di httpOnly cookie.
+- Semua query MySQL menggunakan **prepared statements** (mysql2 `execute`).
+- Validasi input ketat via **express-validator**.
+- Semua Primary Key menggunakan **UUID (CHAR(36))**, bukan auto-increment.
+- Frontend hanya menampilkan pesan error generik (`403/404`).
 
-Lihat skema lengkap di `supabase/migrations/0001_init_posyandu.sql`.
+## Struktur Proyek
+
+```
+posyandu-apps/
+├── src/                    # Frontend React/Vite
+│   ├── lib/api.js
+│   ├── contexts/AuthContext.jsx
+│   ├── components/
+│   ├── pages/
+│   └── utils/swal.js
+├── server/                 # Backend REST API
+│   ├── src/
+│   │   ├── index.js
+│   │   ├── config/db.js
+│   │   ├── middleware/
+│   │   └── routes/
+│   ├── schema.sql
+│   ├── seed.js
+│   └── .env.example
+├── .env.example
+└── README.md
+```
 
 ## Setup
 
-1. Buat project Supabase baru (atau gunakan yang ada).
-2. Jalankan migrasi: `supabase db push` atau paste SQL di SQL Editor.
-3. Buat user admin pertama:
-   - Daftar via Auth (email/password), lalu di SQL Editor set role:
-     ```sql
-     update public.profiles set role = 'admin_desa', posyandu_id = null where id = '<user-uuid>';
-     ```
-4. Isi `.env`:
+### Backend
+1. Buat database & tabel:
+   ```bash
+   mysql -u root -e "CREATE DATABASE IF NOT EXISTS posyandu;"
+   mysql -u root posyandu < server/schema.sql
    ```
-   VITE_SUPABASE_URL=https://<ref>.supabase.co
-   VITE_SUPABASE_ANON_KEY=<anon-key>
+2. Konfigurasi `server/.env` (lihat `server/.env.example`).
+3. Seed admin:
+   ```bash
+   cd server && npm install && node seed.js
    ```
-5. Install & jalankan:
+   Default: `admin@posyandu.local` / `admin123`.
+4. Jalankan:
+   ```bash
+   cd server && npm run dev   # http://localhost:4000
+   ```
+
+### Frontend
+1. Konfigurasi `.env` (lihat `.env.example`): `VITE_API_URL=http://localhost:4000`.
+2. Install & jalankan:
    ```bash
    npm install
-   npm run dev
+   npm run dev   # http://localhost:5173
    ```
 
-## Deploy ke Vercel
-- Set env vars `VITE_SUPABASE_URL` dan `VITE_SUPABASE_ANON_KEY` di Vercel Project Settings.
-- Build command: `npm run build`, output dir: `dist`.
-
-## Keamanan
-- Tidak ada `service_role` key di frontend; hanya `anon` key.
-- Semua akses data lewat RLS; error dimapping ke pesan generik di `src/utils/errors.js`.
-- Tidak ada `alert()`/`confirm()`; semua dialog via SweetAlert2 (`src/utils/swal.js`).
+## Deploy
+- Backend: deploy ke VPS/Render/Railway, set env vars, jalankan `npm start`.
+- Frontend: deploy ke Vercel, set `VITE_API_URL` ke URL backend, build `npm run build`, output `dist`.
+- Pastikan CORS `CLIENT_ORIGIN` di backend sesuai domain frontend.

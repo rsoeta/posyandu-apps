@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { EnvelopeSimple, Lock, Baby } from '@phosphor-icons/react'
 import { useAuth } from '../contexts/AuthContext'
-import { handleSupabaseError } from '../utils/errors'
+import { mapApiError } from '../lib/api'
 import { showError } from '../utils/swal'
 
 export default function Login() {
@@ -16,15 +16,16 @@ export default function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault()
     setLoading(true)
-    const { error } = await signIn(email.trim(), password)
-    setLoading(false)
-    if (error) {
-      const mapped = handleSupabaseError(error)
+    try {
+      await signIn(email.trim(), password)
+      const from = location.state?.from?.pathname || '/'
+      navigate(from, { replace: true })
+    } catch (err) {
+      const mapped = mapApiError(err)
       showError('Login Gagal', mapped.message)
-      return
+    } finally {
+      setLoading(false)
     }
-    const from = location.state?.from?.pathname || '/'
-    navigate(from, { replace: true })
   }
 
   return (

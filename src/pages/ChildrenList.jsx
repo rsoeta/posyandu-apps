@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { MagnifyingGlass, Baby } from '@phosphor-icons/react'
-import { supabase } from '../lib/supabase'
-import { handleSupabaseError } from '../utils/errors'
+import { api, mapApiError } from '../lib/api'
 import { showError } from '../utils/swal'
 
 export default function ChildrenList() {
@@ -10,23 +9,26 @@ export default function ChildrenList() {
   const [query, setQuery] = useState('')
   const [loading, setLoading] = useState(true)
 
-  const load = async () => {
+  const load = async (q = '') => {
     setLoading(true)
-    const { data, error } = await supabase
-      .from('balita')
-      .select('id, nama, tanggal_lahir, jenis_kelamin, nama_ibu, posyandu_id')
-      .order('nama', { ascending: true })
-    if (error) {
-      const mapped = handleSupabaseError(error)
+    try {
+      const res = await api(`/api/balita${q ? `?q=${encodeURIComponent(q)}` : ''}`)
+      setChildren(res.data || [])
+    } catch (e) {
+      const mapped = mapApiError(e)
       showError('Gagal Memuat Data', mapped.message)
+    } finally {
       setLoading(false)
-      return
     }
-    setChildren(data || [])
-    setLoading(false)
   }
 
   useEffect(() => { load() }, [])
+
+  // debounce search
+  useEffect(() => {
+    const t = setTimeout(() => load(query), 300)
+    return () => clearTimeout(t)
+  }, [query])
 
   const filtered = children.filter((c) =>
     c.nama.toLowerCase().includes(query.toLowerCase())

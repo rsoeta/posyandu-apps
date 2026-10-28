@@ -1,21 +1,18 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { ArrowLeft, FloppyDisk } from '@phosphor-icons/react'
-import { supabase } from '../lib/supabase'
-import { useAuth } from '../contexts/AuthContext'
-import { handleSupabaseError } from '../utils/errors'
-import { showSuccess, showError } from '../utils/swal'
+import { api, mapApiError } from '../lib/api'
+import { showError, showSuccess } from '../utils/swal'
 
 const fields = [
-  { key: 'berat', label: 'Berat Badan', unit: 'kg', placeholder: 'contoh: 9.5', step: '0.1' },
-  { key: 'tinggi', label: 'Tinggi / Panjang Badan', unit: 'cm', placeholder: 'contoh: 85.0', step: '0.1' },
-  { key: 'lingkarKepala', label: 'Lingkar Kepala', unit: 'cm', placeholder: 'contoh: 45.0', step: '0.1' },
+  { key: 'berat', label: 'Berat Badan', unit: 'kg', placeholder: 'contoh: 9.5' },
+  { key: 'tinggi', label: 'Tinggi / Panjang Badan', unit: 'cm', placeholder: 'contoh: 85.0' },
+  { key: 'lingkarKepala', label: 'Lingkar Kepala', unit: 'cm', placeholder: 'contoh: 45.0' },
 ]
 
 export default function MeasurementForm() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { user } = useAuth()
   const [child, setChild] = useState(null)
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
@@ -26,19 +23,16 @@ export default function MeasurementForm() {
   useEffect(() => {
     let mounted = true
     const load = async () => {
-      const { data, error } = await supabase
-        .from('balita')
-        .select('id, nama, posyandu_id')
-        .eq('id', id)
-        .single()
-      if (error) {
-        const mapped = handleSupabaseError(error)
+      try {
+        const res = await api(`/api/balita/${id}`)
+        if (mounted) setChild(res.data)
+      } catch (e) {
+        const mapped = mapApiError(e)
         if (mapped.status === 404) setNotFound(true)
         else showError('Gagal Memuat', mapped.message)
-      } else if (mounted) {
-        setChild(data)
+      } finally {
+        if (mounted) setLoading(false)
       }
-      if (mounted) setLoading(false)
     }
     load()
     return () => { mounted = false }
@@ -68,22 +62,24 @@ export default function MeasurementForm() {
     }
     if (!child) return
     setSaving(true)
-    const { error } = await supabase.from('pengukuran').insert({
-      balita_id: child.id,
-      posyandu_id: child.posyandu_id,
-      berat_badan: Number(values.berat),
-      tinggi_badan: Number(values.tinggi),
-      lingkar_kepala: Number(values.lingkarKepala),
-      created_by: user?.id ?? null,
-    })
-    setSaving(false)
-    if (error) {
-      const mapped = handleSupabaseError(error)
+    try {
+      await api('/api/pengukuran', {
+        method: 'POST',
+        body: {
+          balita_id: child.id,
+          berat_badan: Number(values.berat),
+          tinggi_badan: Number(values.tinggi),
+          lingkar_kepala: Number(values.lingkarKepala),
+        },
+      })
+      await showSuccess('Data pengukuran berhasil disimpan.')
+      navigate(`/balita/${id}`)
+    } catch (e) {
+      const mapped = mapApiError(e)
       showError('Gagal Menyimpan', mapped.message)
-      return
+    } finally {
+      setSaving(false)
     }
-    await showSuccess('Data pengukuran berhasil disimpan.')
-    navigate(`/balita/${id}`)
   }
 
   if (loading) {

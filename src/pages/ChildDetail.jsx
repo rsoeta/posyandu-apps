@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { ArrowLeft, Baby, Scales, CalendarBlank } from '@phosphor-icons/react'
-import { supabase } from '../lib/supabase'
-import { handleSupabaseError } from '../utils/errors'
+import { api, mapApiError } from '../lib/api'
 import { showError } from '../utils/swal'
 
 export default function ChildDetail() {
@@ -16,32 +15,19 @@ export default function ChildDetail() {
     let mounted = true
     const load = async () => {
       setLoading(true)
-      const { data: c, error: ce } = await supabase
-        .from('balita')
-        .select('id, nama, tanggal_lahir, jenis_kelamin, nama_ibu, posyandu_id, created_at')
-        .eq('id', id)
-        .single()
-      if (ce) {
-        const mapped = handleSupabaseError(ce)
+      try {
+        const cRes = await api(`/api/balita/${id}`)
+        if (!mounted) return
+        setChild(cRes.data)
+        const mRes = await api(`/api/pengukuran?balita_id=${id}`)
+        if (mounted) setMeasurements(mRes.data || [])
+      } catch (e) {
+        const mapped = mapApiError(e)
         if (mapped.status === 404) setNotFound(true)
         else showError('Gagal Memuat', mapped.message)
-        setLoading(false)
-        return
+      } finally {
+        if (mounted) setLoading(false)
       }
-      if (!mounted) return
-      setChild(c)
-
-      const { data: m, error: me } = await supabase
-        .from('pengukuran')
-        .select('id, tanggal_ukur, berat_badan, tinggi_badan, lingkar_kepala, catatan')
-        .eq('balita_id', id)
-        .order('tanggal_ukur', { ascending: false })
-      if (me) {
-        showError('Gagal Memuat Pengukuran', handleSupabaseError(me).message)
-      } else if (mounted) {
-        setMeasurements(m || [])
-      }
-      setLoading(false)
     }
     load()
     return () => { mounted = false }

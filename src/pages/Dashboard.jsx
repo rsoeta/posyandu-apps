@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Baby, ChartBar, Buildings } from '@phosphor-icons/react'
-import { supabase } from '../lib/supabase'
+import { api, mapApiError } from '../lib/api'
 import { useAuth } from '../contexts/AuthContext'
-import { handleSupabaseError } from '../utils/errors'
 import { showError } from '../utils/swal'
 
 export default function Dashboard() {
@@ -14,38 +13,19 @@ export default function Dashboard() {
     let mounted = true
     const load = async () => {
       setLoading(true)
-      const now = new Date()
-      const start = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10)
-      const end = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().slice(0, 10)
-
-      const queries = [
-        supabase.from('balita').select('id', { count: 'exact', head: true }),
-        supabase.from('ibu_hamil').select('id', { count: 'exact', head: true }),
-        supabase.from('pengukuran').select('id', { count: 'exact', head: true }).gte('tanggal_ukur', start).lte('tanggal_ukur', end),
-      ]
-      if (isAdmin) queries.push(supabase.from('posyandu').select('id', { count: 'exact', head: true }))
-
-      const results = await Promise.all(queries)
-      if (!mounted) return
-      for (const r of results) {
-        if (r.error) {
-          const mapped = handleSupabaseError(r.error)
-          showError('Gagal Memuat Data', mapped.message)
-          setLoading(false)
-          return
-        }
+      try {
+        const res = await api('/api/dashboard')
+        if (mounted) setStats(res.data)
+      } catch (e) {
+        const mapped = mapApiError(e)
+        showError('Gagal Memuat Data', mapped.message)
+      } finally {
+        if (mounted) setLoading(false)
       }
-      setStats({
-        balita: results[0].count ?? 0,
-        ibuHamil: results[1].count ?? 0,
-        ukurBulanIni: results[2].count ?? 0,
-        posyandu: isAdmin ? (results[3].count ?? 0) : 0,
-      })
-      setLoading(false)
     }
     load()
     return () => { mounted = false }
-  }, [isAdmin])
+  }, [])
 
   const cards = [
     { label: 'Total Balita', value: stats.balita, icon: Baby, color: 'from-purple to-pink' },

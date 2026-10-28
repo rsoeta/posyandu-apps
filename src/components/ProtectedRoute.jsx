@@ -2,7 +2,7 @@ import { Navigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 
 export default function ProtectedRoute({ children, requireAdmin = false }) {
-  const { session, profile, loading, isAdmin } = useAuth()
+  const { user, loading, isAdmin } = useAuth()
   const location = useLocation()
 
   if (loading) {
@@ -12,15 +12,11 @@ export default function ProtectedRoute({ children, requireAdmin = false }) {
       </div>
     )
   }
-  if (!session) {
+  if (!user) {
     return <Navigate to="/login" state={{ from: location }} replace />
   }
   if (requireAdmin && !isAdmin) {
     return <Navigate to="/" replace />
-  }
-  // profile not loaded (RLS or missing) -> force login
-  if (!profile) {
-    return <Navigate to="/login" replace />
   }
   return children
 }

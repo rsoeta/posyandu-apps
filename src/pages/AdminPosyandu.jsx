@@ -1,31 +1,31 @@
 import { useEffect, useState } from 'react'
 import { Plus, PencilSimple, Trash, X } from '@phosphor-icons/react'
-import { supabase } from '../lib/supabase'
-import { handleSupabaseError } from '../utils/errors'
+import { api, mapApiError } from '../lib/api'
 import { showSuccess, showError, showConfirm } from '../utils/swal'
 
 export default function AdminPosyandu() {
   const [posyandus, setPosyandus] = useState([])
   const [users, setUsers] = useState([])
   const [loading, setLoading] = useState(true)
-  const [editing, setEditing] = useState(null) // posyandu being edited
+  const [editing, setEditing] = useState(null)
   const [form, setForm] = useState({ name: '', desa: '', alamat: '' })
   const [assignForm, setAssignForm] = useState({ userId: '', posyanduId: '' })
 
   const load = async () => {
     setLoading(true)
-    const [p, u] = await Promise.all([
-      supabase.from('posyandu').select('id, name, desa, alamat').order('name'),
-      supabase.from('profiles').select('id, full_name, role, posyandu_id').order('full_name'),
-    ])
-    if (p.error || u.error) {
-      showError('Gagal Memuat', handleSupabaseError(p.error || u.error).message)
+    try {
+      const [p, u] = await Promise.all([
+        api('/api/posyandu'),
+        api('/api/users'),
+      ])
+      setPosyandus(p.data || [])
+      setUsers(u.data || [])
+    } catch (e) {
+      const mapped = mapApiError(e)
+      showError('Gagal Memuat', mapped.message)
+    } finally {
       setLoading(false)
-      return
     }
-    setPosyandus(p.data || [])
-    setUsers(u.data || [])
-    setLoading(false)
   }
 
   useEffect(() => { load() }, [])
@@ -35,15 +35,19 @@ export default function AdminPosyandu() {
   const handleSubmit = async (e) => {
     e.preventDefault()
     if (!form.name.trim()) { showError('Validasi', 'Nama posyandu wajib diisi.'); return }
-    const payload = { name: form.name.trim(), desa: form.desa.trim() || null, alamat: form.alamat.trim() || null }
-    const op = editing
-      ? supabase.from('posyandu').update(payload).eq('id', editing.id)
-      : supabase.from('posyandu').insert(payload)
-    const { error } = await op
-    if (error) { showError('Gagal Simpan', handleSupabaseError(error).message); return }
-    await showSuccess(editing ? 'Posyandu diperbarui.' : 'Posyandu ditambahkan.')
-    resetForm()
-    load()
+    try {
+      if (editing) {
+        await api(`/api/posyandu/${editing.id}`, { method: 'PUT', body: { name: form.name.trim(), desa: form.desa.trim(), alamat: form.alamat.trim() } })
+      } else {
+        await api('/api/posyandu', { method: 'POST', body: { name: form.name.trim(), desa: form.desa.trim(), alamat: form.alamat.trim() } })
+      }
+      await showSuccess(editing ? 'Posyandu diperbarui.' : 'Posyandu ditambahkan.')
+      resetForm()
+      load()
+    } catch (e) {
+      const mapped = mapApiError(e)
+      showError('Gagal Simpan', mapped.message)
+    }
   }
 
   const handleEdit = (p) => {
@@ -54,10 +58,14 @@ export default function AdminPosyandu() {
   const handleDelete = async (p) => {
     const res = await showConfirm('Hapus Posyandu?', `Hapus "${p.name}"? Data balita terkait akan ikut terhapus.`)
     if (!res.isConfirmed) return
-    const { error } = await supabase.from('posyandu').delete().eq('id', p.id)
-    if (error) { showError('Gagal Hapus', handleSupabaseError(error).message); return }
-    await showSuccess('Posyandu dihapus.')
-    load()
+    try {
+      await api(`/api/posyandu/${p.id}`, { method: 'DELETE' })
+      await showSuccess('Posyandu dihapus.')
+      load()
+    } catch (e) {
+      const mapped = mapApiError(e)
+      showError('Gagal Hapus', mapped.message)
+    }
   }
 
   const handleAssign = async (e) => {
@@ -66,14 +74,15 @@ export default function AdminPosyandu() {
       showError('Validasi', 'Pilih kader dan posyandu.')
       return
     }
-    const { error } = await supabase
-      .from('profiles')
-      .update({ posyandu_id: assignForm.posyanduId, role: 'kader' })
-      .eq('id', assignForm.userId)
-    if (error) { showError('Gagal Assign', handleSupabaseError(error).message); return }
-    await showSuccess('Kader berhasil ditugaskan.')
-    setAssignForm({ userId: '', posyanduId: '' })
-    load()
+    try {
+      await api('/api/posyandu/assign', { method: 'POST', body: { userId: assignForm.userId, posyanduId: assignForm.posyanduId } })
+      await showSuccess('Kader berhasil ditugaskan.')
+      setAssignForm({ userId: '', posyanduId: '' })
+      load()
+    } catch (e) {
+      const mapped = mapApiError(e)
+      showError('Gagal Assign', mapped.message)
+    }
   }
 
   return (
@@ -83,7 +92,6 @@ export default function AdminPosyandu() {
         <p className="text-gray-500 text-sm mt-1">Kelola master data posyandu dan penugasan kader.</p>
       </div>
 
-      {/* Form Posyandu */}
       <form onSubmit={handleSubmit} className="bg-white rounded-2xl p-5 shadow-sm border border-purple-50 flex flex-col gap-4">
         <h2 className="font-heading text-lg font-semibold text-gray-900">
           {editing ? 'Edit Posyandu' : 'Tambah Posyandu'}
@@ -124,7 +132,6 @@ export default function AdminPosyandu() {
         </div>
       </form>
 
-      {/* Assign kader */}
       <form onSubmit={handleAssign} className="bg-white rounded-2xl p-5 shadow-sm border border-purple-50 flex flex-col gap-4">
         <h2 className="font-heading text-lg font-semibold text-gray-900">Tugaskan Kader ke Posyandu</h2>
         <div className="flex flex-wrap gap-3">
@@ -134,8 +141,8 @@ export default function AdminPosyandu() {
             className="flex-1 min-w-[180px] min-h-[48px] px-3 rounded-xl border border-purple-100 focus:outline-none focus:ring-2 focus:ring-purple/40 focus:border-purple text-base"
           >
             <option value="">Pilih kader...</option>
-            {users.filter((u) => u.role === 'kader' || !u.posyandu_id).map((u) => (
-              <option key={u.id} value={u.id}>{u.full_name || u.id.slice(0, 8)}</option>
+            {users.map((u) => (
+              <option key={u.id} value={u.id}>{u.full_name || u.email}</option>
             ))}
           </select>
           <select
@@ -154,7 +161,6 @@ export default function AdminPosyandu() {
         </div>
       </form>
 
-      {/* List posyandu */}
       {loading ? (
         <div className="flex items-center justify-center py-12">
           <div className="w-8 h-8 border-4 border-purple border-t-transparent rounded-full animate-spin" />
