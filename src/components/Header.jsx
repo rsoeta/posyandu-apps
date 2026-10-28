@@ -1,5 +1,6 @@
-import { Link, useLocation } from 'react-router-dom'
-import { House, Baby, CalendarBlank } from '@phosphor-icons/react'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { House, Baby, CalendarBlank, SignOut, Buildings } from '@phosphor-icons/react'
+import { useAuth } from '../contexts/AuthContext'
 
 const navItems = [
   { to: '/', label: 'Beranda', icon: House },
@@ -9,17 +10,36 @@ const navItems = [
 
 export default function Header() {
   const location = useLocation()
+  const navigate = useNavigate()
+  const { posyanduName, isAdmin, signOut } = useAuth()
+
+  const handleSignOut = async () => {
+    await signOut()
+    navigate('/login', { replace: true })
+  }
+
   return (
     <header className="sticky top-0 z-30 bg-white/90 backdrop-blur border-b border-purple-100">
-      <div className="flex items-center justify-between px-4 py-3 max-w-5xl mx-auto">
-        <Link to="/" className="flex items-center gap-2 min-h-[48px]">
-          <span className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-purple to-pink text-white">
+      <div className="flex items-center justify-between px-4 py-3 max-w-5xl mx-auto gap-3">
+        <Link to="/" className="flex items-center gap-2 min-h-[48px] min-w-0">
+          <span className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-purple to-pink text-white shrink-0">
             <Baby size={22} weight="fill" />
           </span>
-          <span className="font-heading font-bold text-lg bg-gradient-to-r from-purple to-pink bg-clip-text text-transparent">
-            Posyandu Ceria
-          </span>
+          <div className="min-w-0">
+            <span className="font-heading font-bold text-base md:text-lg bg-gradient-to-r from-purple to-pink bg-clip-text text-transparent block truncate">
+              Posyandu Ceria
+            </span>
+            {posyanduName && (
+              <span className="text-xs text-gray-500 flex items-center gap-1 truncate">
+                <Buildings size={12} /> {posyanduName}
+              </span>
+            )}
+            {isAdmin && !posyanduName && (
+              <span className="text-xs text-purple font-medium">Admin Desa</span>
+            )}
+          </div>
         </Link>
+
         {/* Desktop nav */}
         <nav className="hidden md:flex items-center gap-1">
           {navItems.map(({ to, label, icon: Icon }) => {
@@ -28,7 +48,7 @@ export default function Header() {
               <Link
                 key={to}
                 to={to}
-                className={`flex items-center gap-2 px-4 min-h-[48px] rounded-xl font-medium transition-colors ${
+                className={`flex items-center gap-2 px-3 min-h-[48px] rounded-xl font-medium transition-colors ${
                   active ? 'bg-purple-50 text-purple' : 'text-gray-600 hover:bg-gray-100'
                 }`}
               >
@@ -37,7 +57,43 @@ export default function Header() {
               </Link>
             )
           })}
+          {isAdmin && (
+            <Link
+              to="/admin/posyandu"
+              className={`flex items-center gap-2 px-3 min-h-[48px] rounded-xl font-medium transition-colors ${
+                location.pathname.startsWith('/admin') ? 'bg-purple-50 text-purple' : 'text-gray-600 hover:bg-gray-100'
+              }`}
+            >
+              <Buildings size={20} /> Admin
+            </Link>
+          )}
+          <button
+            onClick={handleSignOut}
+            className="flex items-center gap-2 px-3 min-h-[48px] rounded-xl font-medium text-gray-600 hover:bg-gray-100 transition-colors"
+          >
+            <SignOut size={20} /> Keluar
+          </button>
         </nav>
+
+        {/* Mobile actions */}
+        <div className="md:hidden flex items-center gap-1">
+          {isAdmin && (
+            <Link
+              to="/admin/posyandu"
+              className="inline-flex items-center justify-center w-12 h-12 rounded-xl text-purple hover:bg-purple-50"
+              aria-label="Admin"
+            >
+              <Buildings size={22} />
+            </Link>
+          )}
+          <button
+            onClick={handleSignOut}
+            className="inline-flex items-center justify-center w-12 h-12 rounded-xl text-gray-600 hover:bg-gray-100"
+            aria-label="Keluar"
+          >
+            <SignOut size={22} />
+          </button>
+        </div>
       </div>
     </header>
   )

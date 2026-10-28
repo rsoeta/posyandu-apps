@@ -1,7 +1,9 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
-import { ArrowLeft, Scales, FloppyDisk } from '@phosphor-icons/react'
-import { children } from '../data/mockData'
+import { ArrowLeft, FloppyDisk } from '@phosphor-icons/react'
+import { supabase } from '../lib/supabase'
+import { useAuth } from '../contexts/AuthContext'
+import { handleSupabaseError } from '../utils/errors'
 import { showSuccess, showError } from '../utils/swal'
 
 const fields = [
@@ -13,10 +15,34 @@ const fields = [
 export default function MeasurementForm() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const child = children.find((c) => c.id === Number(id))
-
+  const { user } = useAuth()
+  const [child, setChild] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [notFound, setNotFound] = useState(false)
   const [values, setValues] = useState({ berat: '', tinggi: '', lingkarKepala: '' })
   const [errors, setErrors] = useState({})
+  const [saving, setSaving] = useState(false)
+
+  useEffect(() => {
+    let mounted = true
+    const load = async () => {
+      const { data, error } = await supabase
+        .from('balita')
+        .select('id, nama, posyandu_id')
+        .eq('id', id)
+        .single()
+      if (error) {
+        const mapped = handleSupabaseError(error)
+        if (mapped.status === 404) setNotFound(true)
+        else showError('Gagal Memuat', mapped.message)
+      } else if (mounted) {
+        setChild(data)
+      }
+      if (mounted) setLoading(false)
+    }
+    load()
+    return () => { mounted = false }
+  }, [id])
 
   const handleChange = (key, val) => {
     setValues((v) => ({ ...v, [key]: val }))
@@ -27,11 +53,8 @@ export default function MeasurementForm() {
     const newErrors = {}
     fields.forEach(({ key }) => {
       const v = values[key].trim()
-      if (v === '') {
-        newErrors[key] = 'Wajib diisi'
-      } else if (isNaN(Number(v)) || Number(v) <= 0) {
-        newErrors[key] = 'Masukkan angka yang valid (> 0)'
-      }
+      if (v === '') newErrors[key] = 'Wajib diisi'
+      else if (isNaN(Number(v)) || Number(v) <= 0) newErrors[key] = 'Masukkan angka yang valid (> 0)'
     })
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
@@ -43,17 +66,41 @@ export default function MeasurementForm() {
       showError('Validasi Gagal', 'Periksa kembali isian form.')
       return
     }
+    if (!child) return
+    setSaving(true)
+    const { error } = await supabase.from('pengukuran').insert({
+      balita_id: child.id,
+      posyandu_id: child.posyandu_id,
+      berat_badan: Number(values.berat),
+      tinggi_badan: Number(values.tinggi),
+      lingkar_kepala: Number(values.lingkarKepala),
+      created_by: user?.id ?? null,
+    })
+    setSaving(false)
+    if (error) {
+      const mapped = handleSupabaseError(error)
+      showError('Gagal Menyimpan', mapped.message)
+      return
+    }
     await showSuccess('Data pengukuran berhasil disimpan.')
     navigate(`/balita/${id}`)
   }
 
-  if (!child) {
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[40vh]">
+        <div className="w-8 h-8 border-4 border-purple border-t-transparent rounded-full animate-spin" />
+      </div>
+    )
+  }
+
+  if (notFound || !child) {
     return (
       <section className="flex flex-col gap-4">
         <Link to="/balita" className="inline-flex items-center gap-2 text-purple font-medium min-h-[48px]">
           <ArrowLeft size={20} /> Kembali
         </Link>
-        <p className="text-gray-500">Data balita tidak ditemukan.</p>
+        <p className="text-gray-500">Data balita tidak ditemukan atau tidak dapat diakses.</p>
       </section>
     )
   }
@@ -67,12 +114,12 @@ export default function MeasurementForm() {
       <div>
         <h1 className="font-heading text-2xl md:text-3xl font-bold text-gray-900">Form Pengukuran</h1>
         <p className="text-gray-500 text-sm mt-1">
-          Input data bulanan untuk <span className="font-semibold text-gray-700">{child.name}</span>.
+          Input data bulanan untuk <span className="font-semibold text-gray-700">{child.nama}</span>.
         </p>
       </div>
 
       <form onSubmit={handleSubmit} className="bg-white rounded-2xl p-5 shadow-sm border border-purple-50 flex flex-col gap-5">
-        {fields.map(({ key, label, unit, placeholder, step }) => (
+        {fields.map(({ key, label, unit, placeholder }) => (
           <div key={key} className="flex flex-col gap-2">
             <label htmlFor={key} className="font-heading font-semibold text-gray-800 text-sm">
               {label} <span className="text-gray-400 font-normal">({unit})</span>
@@ -101,9 +148,10 @@ export default function MeasurementForm() {
 
         <button
           type="submit"
-          className="inline-flex items-center justify-center gap-2 min-h-[52px] px-6 rounded-xl bg-purple text-white font-semibold text-base hover:bg-purple-600 active:scale-[0.99] transition-all w-full"
+          disabled={saving}
+          className="inline-flex items-center justify-center gap-2 min-h-[52px] px-6 rounded-xl bg-purple text-white font-semibold text-base hover:bg-purple-600 active:scale-[0.99] transition-all w-full disabled:opacity-60"
         >
-          <FloppyDisk size={22} weight="fill" /> Simpan Pengukuran
+          <FloppyDisk size={22} weight="fill" /> {saving ? 'Menyimpan...' : 'Simpan Pengukuran'}
         </button>
       </form>
     </section>

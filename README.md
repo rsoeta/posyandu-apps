@@ -1,16 +1,54 @@
-# React + Vite
+# Posyandu Ceria — Aplikasi Pencatatan Posyandu Tingkat Desa
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+Frontend React/Vite (deploy ke Vercel) + Supabase (PostgreSQL + Auth) dengan Multi-Posyandu RBAC via Row Level Security (RLS).
 
-Currently, two official plugins are available:
+## Arsitektur
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+```
+┌──────────────────┐        HTTPS        ┌──────────────────────┐
+│  React + Vite    │ ──────────────────► │  Supabase (BaaS)     │
+│  (Vercel)        │  anon key + JWT     │  - Auth (email/pw)   │
+│  - AuthContext   │ ◄────────────────── │  - PostgreSQL + RLS  │
+│  - ProtectedRoute│                     │  - Object-level RBAC │
+└──────────────────┘                     └──────────────────────┘
+```
 
-## React Compiler
+### Role & Akses
+- **Admin Desa**: akses penuh seluruh posyandu di desa, CRUD master Posyandu, assign Kader.
+- **Kader Posyandu**: hanya dapat melihat/mengubah data balita & pengukuran di Posyandu tempat ia ditugaskan (`posyandu_id` cocok dengan profil).
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+RBAC ditegakkan di level database melalui RLS. Frontend hanya menampilkan error generik (`403 Forbidden` / `404 Not Found`) tanpa membocorkan struktur tabel.
 
-## Expanding the Oxlint configuration
+### Tabel (semua PK UUID v4)
+- `posyandu`, `profiles`, `balita`, `ibu_hamil`, `pengukuran`, `jadwal`.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+Lihat skema lengkap di `supabase/migrations/0001_init_posyandu.sql`.
+
+## Setup
+
+1. Buat project Supabase baru (atau gunakan yang ada).
+2. Jalankan migrasi: `supabase db push` atau paste SQL di SQL Editor.
+3. Buat user admin pertama:
+   - Daftar via Auth (email/password), lalu di SQL Editor set role:
+     ```sql
+     update public.profiles set role = 'admin_desa', posyandu_id = null where id = '<user-uuid>';
+     ```
+4. Isi `.env`:
+   ```
+   VITE_SUPABASE_URL=https://<ref>.supabase.co
+   VITE_SUPABASE_ANON_KEY=<anon-key>
+   ```
+5. Install & jalankan:
+   ```bash
+   npm install
+   npm run dev
+   ```
+
+## Deploy ke Vercel
+- Set env vars `VITE_SUPABASE_URL` dan `VITE_SUPABASE_ANON_KEY` di Vercel Project Settings.
+- Build command: `npm run build`, output dir: `dist`.
+
+## Keamanan
+- Tidak ada `service_role` key di frontend; hanya `anon` key.
+- Semua akses data lewat RLS; error dimapping ke pesan generik di `src/utils/errors.js`.
+- Tidak ada `alert()`/`confirm()`; semua dialog via SweetAlert2 (`src/utils/swal.js`).
