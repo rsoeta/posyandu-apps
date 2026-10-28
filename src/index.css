@@ -1,0 +1,61 @@
+@import "tailwindcss";
+
+@theme {
+  --color-purple: #6C2BD9;
+  --color-pink: #FF4FA3;
+  --color-purple-50: #f3eeff;
+  --color-purple-100: #e7dcff;
+  --color-purple-600: #5a22b8;
+  --color-pink-50: #ffeaf3;
+  --color-pink-600: #e03d8a;
+
+  --font-heading: "Outfit", ui-sans-serif, system-ui, sans-serif;
+  --font-body: "Urbanist", ui-sans-serif, system-ui, sans-serif;
+}
+
+@layer base {
+  html {
+    font-family: var(--font-body);
+    font-size: 16px;
+  }
+  body {
+    margin: 0;
+    font-family: var(--font-body);
+    background-color: #f7f5fb;
+    color: #1f1a2e;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
+  }
+  #root {
+    min-height: 100svh;
+  }
+}
+
+/* SweetAlert2 mobile optimization */
+.posy-popup {
+  border-radius: 1rem !important;
+  padding: 1.25rem !important;
+  width: min(90vw, 360px) !important;
+  font-family: var(--font-body) !important;
+}
+.posy-title {
+  font-family: var(--font-heading) !important;
+  font-size: 1.125rem !important;
+}
+.posy-html {
+  font-size: 0.9rem !important;
+}
+.posy-confirm,
+.posy-cancel {
+  min-height: 44px !important;
+  padding: 0.5rem 1.25rem !important;
+  border-radius: 0.75rem !important;
+  font-family: var(--font-body) !important;
+  font-weight: 600 !important;
+}
+.posy-confirm {
+  background-color: #6C2BD9 !important;
+}
