@@ -19,6 +19,7 @@ CREATE TABLE IF NOT EXISTS users (
   email         VARCHAR(191) NOT NULL UNIQUE,
   password_hash VARCHAR(255) NOT NULL,
   role          ENUM('admin_desa','kader') NOT NULL DEFAULT 'kader',
+  status        ENUM('pending','approved','rejected') NOT NULL DEFAULT 'pending',
   posyandu_id   CHAR(36),
   full_name     VARCHAR(150),
   created_at    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -78,3 +79,21 @@ CREATE TABLE IF NOT EXISTS jadwal (
   created_at  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT fk_jadwal_posyandu FOREIGN KEY (posyandu_id) REFERENCES posyandu(id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS kegiatan (
+  id               CHAR(36) PRIMARY KEY,
+  posyandu_id      CHAR(36) NOT NULL,
+  judul            VARCHAR(255) NOT NULL,
+  deskripsi        TEXT NOT NULL,
+  foto             TEXT,
+  tanggal_kegiatan DATE NOT NULL,
+  lokasi           VARCHAR(255),
+  created_by       CHAR(36),
+  created_at       DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at       DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  CONSTRAINT fk_kegiatan_posyandu FOREIGN KEY (posyandu_id) REFERENCES posyandu(id) ON DELETE CASCADE,
+  CONSTRAINT fk_kegiatan_users FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL,
+  INDEX idx_kegiatan_posyandu (posyandu_id),
+  INDEX idx_kegiatan_tanggal (tanggal_kegiatan)
+) ENGINE=InnoDB;
+

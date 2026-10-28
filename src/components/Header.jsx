@@ -1,17 +1,18 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { House, Baby, CalendarBlank, SignOut, Buildings } from '@phosphor-icons/react'
+import { House, Baby, CalendarBlank, SignOut, Buildings, Camera } from '@phosphor-icons/react'
 import { useAuth } from '../contexts/AuthContext'
 
 const navItems = [
   { to: '/', label: 'Beranda', icon: House },
   { to: '/balita', label: 'Data Balita', icon: Baby },
   { to: '/jadwal', label: 'Jadwal', icon: CalendarBlank },
+  { to: '/kegiatan', label: 'Kegiatan', icon: Camera },
 ]
 
 export default function Header() {
   const location = useLocation()
   const navigate = useNavigate()
-  const { posyanduName, isAdmin, signOut } = useAuth()
+  const { posyanduName, isAdmin, signOut, user } = useAuth()
 
   const handleSignOut = async () => {
     await signOut()
@@ -67,12 +68,21 @@ export default function Header() {
               <Buildings size={20} /> Admin
             </Link>
           )}
-          <button
-            onClick={handleSignOut}
-            className="flex items-center gap-2 px-3 min-h-[48px] rounded-xl font-medium text-gray-600 hover:bg-gray-100 transition-colors"
-          >
-            <SignOut size={20} /> Keluar
-          </button>
+          {user ? (
+            <button
+              onClick={handleSignOut}
+              className="flex items-center gap-2 px-3 min-h-[48px] rounded-xl font-medium text-gray-600 hover:bg-gray-100 transition-colors"
+            >
+              <SignOut size={20} /> Keluar
+            </button>
+          ) : (
+            <Link
+              to="/login"
+              className="flex items-center gap-2 px-4 min-h-[42px] rounded-xl font-semibold bg-purple text-white hover:bg-purple-600 transition-colors text-sm shadow-xs"
+            >
+              Masuk
+            </Link>
+          )}
         </nav>
 
         {/* Mobile actions */}
@@ -86,13 +96,22 @@ export default function Header() {
               <Buildings size={22} />
             </Link>
           )}
-          <button
-            onClick={handleSignOut}
-            className="inline-flex items-center justify-center w-12 h-12 rounded-xl text-gray-600 hover:bg-gray-100"
-            aria-label="Keluar"
-          >
-            <SignOut size={22} />
-          </button>
+          {user ? (
+            <button
+              onClick={handleSignOut}
+              className="inline-flex items-center justify-center w-12 h-12 rounded-xl text-gray-600 hover:bg-gray-100"
+              aria-label="Keluar"
+            >
+              <SignOut size={22} />
+            </button>
+          ) : (
+            <Link
+              to="/login"
+              className="px-3 py-1.5 rounded-lg bg-purple text-white text-xs font-semibold"
+            >
+              Masuk
+            </Link>
+          )}
         </div>
       </div>
     </header>

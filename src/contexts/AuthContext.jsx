@@ -20,8 +20,8 @@ export function AuthProvider({ children }) {
 
   useEffect(() => { fetchMe() }, [])
 
-  const signIn = async (email, password) => {
-    const res = await api('/api/auth/login', { method: 'POST', body: { email, password } })
+  const signIn = async (email, password, cfToken) => {
+    const res = await api('/api/auth/login', { method: 'POST', body: { email, password, cfToken } })
     setUser(res.user)
     return res
   }

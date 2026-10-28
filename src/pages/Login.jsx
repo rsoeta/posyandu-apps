@@ -1,9 +1,10 @@
 import { useState } from 'react'
-import { useNavigate, useLocation } from 'react-router-dom'
-import { EnvelopeSimple, Lock, Baby } from '@phosphor-icons/react'
+import { useNavigate, useLocation, Link } from 'react-router-dom'
+import { EnvelopeSimple, Lock, Baby, UserPlus } from '@phosphor-icons/react'
 import { useAuth } from '../contexts/AuthContext'
 import { mapApiError } from '../lib/api'
 import { showError } from '../utils/swal'
+import Turnstile from '../components/Turnstile'
 
 export default function Login() {
   const navigate = useNavigate()
@@ -11,13 +12,14 @@ export default function Login() {
   const { signIn } = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [cfToken, setCfToken] = useState('')
   const [loading, setLoading] = useState(false)
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     setLoading(true)
     try {
-      await signIn(email.trim(), password)
+      await signIn(email.trim(), password, cfToken)
       const from = location.state?.from?.pathname || '/'
       navigate(from, { replace: true })
     } catch (err) {
@@ -72,6 +74,9 @@ export default function Login() {
             </div>
           </div>
 
+          {/* Cloudflare Turnstile */}
+          <Turnstile onVerify={(token) => setCfToken(token)} />
+
           <button
             type="submit"
             disabled={loading}
@@ -80,6 +85,16 @@ export default function Login() {
             {loading ? 'Memproses...' : 'Masuk'}
           </button>
         </form>
+
+        <div className="pt-2 border-t border-purple-50 text-center text-sm text-gray-500 flex flex-col gap-1">
+          <span>Kader baru dan belum punya akun?</span>
+          <Link
+            to="/register"
+            className="text-purple font-semibold hover:underline inline-flex items-center justify-center gap-1.5"
+          >
+            <UserPlus size={16} /> Daftar Akun Kader
+          </Link>
+        </div>
       </div>
     </div>
   )

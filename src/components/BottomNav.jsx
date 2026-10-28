@@ -1,9 +1,10 @@
 import { Link, useLocation } from 'react-router-dom'
-import { House, Baby, CalendarBlank } from '@phosphor-icons/react'
+import { House, Baby, CalendarBlank, Camera } from '@phosphor-icons/react'
 
 const items = [
   { to: '/', label: 'Beranda', icon: House },
-  { to: '/balita', label: 'Data Balita', icon: Baby },
+  { to: '/balita', label: 'Balita', icon: Baby },
+  { to: '/kegiatan', label: 'Kegiatan', icon: Camera },
   { to: '/jadwal', label: 'Jadwal', icon: CalendarBlank },
 ]
 

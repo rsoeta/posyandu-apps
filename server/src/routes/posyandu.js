@@ -20,6 +20,13 @@ router.get('/', auth, async (req, res, next) => {
   } catch (e) { next(e) }
 })
 
+router.get('/public-list', async (req, res, next) => {
+  try {
+    const [rows] = await pool.execute('SELECT id, name, desa FROM posyandu ORDER BY name')
+    res.json({ data: rows })
+  } catch (e) { next(e) }
+})
+
 router.get('/:id', auth, async (req, res, next) => {
   try {
     const id = req.params.id

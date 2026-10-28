@@ -9,8 +9,8 @@ const hash = await bcrypt.hash(password, 10)
 const id = randomUUID()
 
 await pool.execute(
-  'INSERT INTO users (id, email, password_hash, role, full_name) VALUES (?,?,?,?,?) ON DUPLICATE KEY UPDATE email=email',
-  [id, email, hash, 'admin_desa', 'Admin Desa']
+  'INSERT INTO users (id, email, password_hash, role, status, full_name) VALUES (?,?,?,?,?,?) ON DUPLICATE KEY UPDATE status="approved"',
+  [id, email, hash, 'admin_desa', 'approved', 'Admin Desa']
 )
 console.log('Seeded admin:', email, '/', password)
 process.exit(0)
