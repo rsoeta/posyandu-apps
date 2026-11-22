@@ -9,14 +9,21 @@
   --color-pink-50: #ffeaf3;
   --color-pink-600: #e03d8a;
 
-  --font-heading: "Outfit", ui-sans-serif, system-ui, sans-serif;
-  --font-body: "Urbanist", ui-sans-serif, system-ui, sans-serif;
+  --font-heading: "Lato", ui-sans-serif, system-ui, sans-serif;
+  --font-body: "Lato", ui-sans-serif, system-ui, sans-serif;
 }
 
 @layer base {
+  /* Mobile-first: base 12px on mobile */
   html {
     font-family: var(--font-body);
-    font-size: 16px;
+    font-size: 12px;
+  }
+  /* min-width for larger screens */
+  @media (min-width: 768px) {
+    html {
+      font-size: 16px;
+    }
   }
   body {
     margin: 0;
