@@ -224,7 +224,7 @@ export default function AdminPosyandu() {
         <div className="flex flex-col gap-5">
           <form
             onSubmit={handleSubmit}
-            className="bg-white rounded-2xl p-5 shadow-sm border border-purple-50 flex flex-col gap-4"
+            className="glass rounded-2xl p-5 flex flex-col gap-4"
           >
             <h2 className="font-heading text-lg font-semibold text-gray-900">
               {editing ? 'Edit Posyandu' : 'Tambah Posyandu'}
@@ -279,7 +279,7 @@ export default function AdminPosyandu() {
 
           <form
             onSubmit={handleAssign}
-            className="bg-white rounded-2xl p-5 shadow-sm border border-purple-50 flex flex-col gap-4"
+            className="glass rounded-2xl p-5 flex flex-col gap-4"
           >
             <h2 className="font-heading text-lg font-semibold text-gray-900">
               Tugaskan Kader ke Posyandu
@@ -329,7 +329,7 @@ export default function AdminPosyandu() {
               {posyandus.map((p) => (
                 <div
                   key={p.id}
-                  className="bg-white rounded-2xl p-4 shadow-sm border border-purple-50 flex items-center gap-4 min-h-[64px]"
+                  className="glass rounded-2xl p-4 flex items-center gap-4 min-h-[64px]"
                 >
                   <div className="flex-1 min-w-0">
                     <p className="font-heading font-semibold text-gray-900 truncate">{p.name}</p>
@@ -394,7 +394,7 @@ export default function AdminPosyandu() {
                 return (
                   <div
                     key={u.id}
-                    className={`bg-white rounded-2xl p-4 shadow-sm border transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
+                    className={`glass rounded-2xl p-4 shadow-sm border transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
                       isPending
                         ? 'border-amber-300 ring-1 ring-amber-300/60 bg-amber-50/20'
                         : 'border-purple-50'

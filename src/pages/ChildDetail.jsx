@@ -190,7 +190,7 @@ export default function ChildDetail() {
         >
           <ArrowLeft size={20} /> Kembali ke daftar balita
         </Link>
-        <div className="bg-white rounded-2xl p-8 text-center border border-purple-50">
+        <div className="glass rounded-2xl p-8 text-center ">
           <p className="text-gray-600 font-semibold">
             Data balita tidak ditemukan atau Anda tidak memiliki akses ke posyandu ini.
           </p>
@@ -230,7 +230,7 @@ export default function ChildDetail() {
       </div>
 
       {/* Kartu Profil Balita */}
-      <div className="bg-white rounded-2xl p-5 sm:p-6 shadow-sm border border-purple-50 flex flex-col gap-5">
+      <div className="glass rounded-2xl p-5 sm:p-6 flex flex-col gap-5">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-start gap-4">
             <span
@@ -314,7 +314,7 @@ export default function ChildDetail() {
       </div>
 
       {/* Riwayat Pengukuran */}
-      <div className="bg-white rounded-2xl p-5 shadow-sm border border-purple-50 flex flex-col gap-4">
+      <div className="glass rounded-2xl p-5 flex flex-col gap-4">
         <div className="flex items-center justify-between">
           <h2 className="font-heading text-lg font-bold text-gray-900">
             Riwayat Pengukuran & Penimbangan ({measurements.length})
@@ -343,7 +343,7 @@ export default function ChildDetail() {
             {measurements.map((m) => (
               <div
                 key={m.id}
-                className="border border-purple-50 hover:border-purple/30 rounded-xl p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition-colors bg-white"
+                className=" hover:border-purple/30 rounded-xl p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition-colors bg-white"
               >
                 <div className="flex flex-wrap items-center gap-4 text-sm">
                   <span className="inline-flex items-center gap-1.5 font-semibold text-gray-700 bg-purple-50/70 px-2.5 py-1 rounded-lg text-xs">
@@ -394,7 +394,7 @@ export default function ChildDetail() {
       {/* MODAL EDIT BALITA */}
       {editOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs">
-          <div className="bg-white rounded-2xl w-full max-w-lg shadow-xl border border-purple-50 overflow-hidden flex flex-col max-h-[90vh]">
+          <div className="glass rounded-2xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]">
             <div className="flex items-center justify-between p-4 sm:p-5 border-b border-gray-100">
               <h2 className="font-heading font-bold text-lg text-gray-900">
                 Edit Data Balita

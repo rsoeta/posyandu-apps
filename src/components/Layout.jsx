@@ -3,9 +3,10 @@ import BottomNav from './BottomNav'
 
 export default function Layout({ children }) {
   return (
-    <div className="min-h-svh flex flex-col">
+    <div className="min-h-dvh flex flex-col">
+      <a className="skip" href="#main">Lewati ke konten</a>
       <Header />
-      <main className="flex-1 w-full max-w-5xl mx-auto px-4 py-5 pb-24 md:pb-8">
+      <main id="main" className="flex-1 w-full max-w-6xl mx-auto px-4 py-5 pb-24 md:pb-8">
         {children}
       </main>
       <BottomNav />

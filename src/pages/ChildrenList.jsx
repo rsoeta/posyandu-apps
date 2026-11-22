@@ -274,7 +274,7 @@ export default function ChildrenList() {
       </div>
 
       {/* Bar Pencarian & Filter */}
-      <div className="bg-white rounded-2xl p-4 shadow-sm border border-purple-50 flex flex-col gap-3">
+      <div className="glass rounded-2xl p-4 flex flex-col gap-3">
         <div className="relative">
           <MagnifyingGlass
             size={20}
@@ -381,7 +381,7 @@ export default function ChildrenList() {
           <div className="w-8 h-8 border-4 border-purple border-t-transparent rounded-full animate-spin" />
         </div>
       ) : filteredList.length === 0 ? (
-        <div className="bg-white rounded-2xl p-10 text-center border border-purple-50 flex flex-col items-center gap-3">
+        <div className="glass rounded-2xl p-10 text-center  flex flex-col items-center gap-3">
           <span className="w-14 h-14 rounded-2xl bg-purple-50 text-purple flex items-center justify-center">
             <Baby size={32} />
           </span>
@@ -411,7 +411,7 @@ export default function ChildrenList() {
             return (
               <div
                 key={c.id}
-                className="bg-white rounded-2xl p-4 shadow-sm border border-purple-50 hover:border-purple/30 transition-all flex flex-col justify-between gap-3 group"
+                className="glass rounded-2xl p-4 hover:border-purple/30 transition-all flex flex-col justify-between gap-3 group"
               >
                 {/* Bagian Atas: Avatar & Info Utama */}
                 <div className="flex items-start gap-3.5">
@@ -521,7 +521,7 @@ export default function ChildrenList() {
       {/* MODAL FORM: TAMBAH & EDIT BALITA */}
       {modalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs animate-fadeIn">
-          <div className="bg-white rounded-2xl w-full max-w-lg shadow-xl border border-purple-50 overflow-hidden flex flex-col max-h-[90vh]">
+          <div className="glass rounded-2xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]">
             {/* Modal Header */}
             <div className="flex items-center justify-between p-4 sm:p-5 border-b border-gray-100">
               <div className="flex items-center gap-2.5">

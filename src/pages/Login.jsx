@@ -32,7 +32,7 @@ export default function Login() {
 
   return (
     <div className="min-h-svh flex items-center justify-center px-4 py-8 bg-gradient-to-br from-purple-50 to-pink-50">
-      <div className="w-full max-w-sm bg-white rounded-2xl shadow-sm border border-purple-50 p-6 flex flex-col gap-5">
+      <div className="w-full max-w-sm glass rounded-2xl p-6 flex flex-col gap-5">
         <div className="flex flex-col items-center gap-2 text-center">
           <span className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-purple to-pink text-white">
             <Baby size={32} weight="fill" />

@@ -302,7 +302,7 @@ export default function ActivitiesList() {
       </div>
 
       {/* Bar Pencarian & Filter */}
-      <div className="bg-white rounded-2xl p-4 shadow-sm border border-purple-50 flex flex-col sm:flex-row items-center gap-3">
+      <div className="glass rounded-2xl p-4 flex flex-col sm:flex-row items-center gap-3">
         <div className="relative flex-1 w-full">
           <MagnifyingGlass
             size={20}
@@ -339,7 +339,7 @@ export default function ActivitiesList() {
           <div className="w-8 h-8 border-4 border-purple border-t-transparent rounded-full animate-spin" />
         </div>
       ) : filteredActivities.length === 0 ? (
-        <div className="bg-white rounded-2xl p-10 text-center border border-purple-50 flex flex-col items-center gap-3">
+        <div className="glass rounded-2xl p-10 text-center  flex flex-col items-center gap-3">
           <span className="w-14 h-14 rounded-2xl bg-purple-50 text-purple flex items-center justify-center">
             <Camera size={32} />
           </span>
@@ -358,7 +358,7 @@ export default function ActivitiesList() {
             return (
               <div
                 key={k.id}
-                className="bg-white rounded-2xl shadow-sm border border-purple-50 hover:border-purple/30 overflow-hidden flex flex-col justify-between transition-all group"
+                className="glass rounded-2xl hover:border-purple/30 overflow-hidden flex flex-col justify-between transition-all group"
               >
                 <div>
                   {/* Foto dengan Watermark */}
@@ -472,7 +472,7 @@ export default function ActivitiesList() {
       {/* MODAL FORM TAMBAH / EDIT KEGIATAN */}
       {modalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/45 backdrop-blur-xs animate-fadeIn">
-          <div className="bg-white rounded-2xl w-full max-w-xl shadow-2xl border border-purple-50 overflow-hidden flex flex-col max-h-[92vh]">
+          <div className="glass rounded-2xl w-full max-w-xl shadow-2xl  overflow-hidden flex flex-col max-h-[92vh]">
             <div className="flex items-center justify-between p-4 sm:p-5 border-b border-gray-100">
               <div className="flex items-center gap-2">
                 <span className="w-9 h-9 rounded-xl bg-purple-50 text-purple flex items-center justify-center">

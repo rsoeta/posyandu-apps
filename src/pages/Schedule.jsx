@@ -38,7 +38,7 @@ export default function Schedule() {
         <div className="flex flex-col gap-3">
           {schedules.length === 0 && <p className="text-center text-gray-400 py-8">Belum ada jadwal.</p>}
           {schedules.map((s) => (
-            <div key={s.id} className="bg-white rounded-2xl p-5 shadow-sm border border-purple-50 flex flex-col gap-2">
+            <div key={s.id} className="glass rounded-2xl p-5 flex flex-col gap-2">
               <div className="flex items-center gap-3">
                 <span className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-pink-50 text-pink shrink-0">
                   <CalendarBlank size={24} weight="fill" />

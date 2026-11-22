@@ -52,7 +52,7 @@ export default function Dashboard() {
           {cards.map(({ label, value, icon: Icon, color }) => (
             <div
               key={label}
-              className="flex-grow basis-[calc(33.333%-1rem)] min-w-[160px] bg-white rounded-2xl p-5 shadow-sm border border-purple-50 flex items-center gap-4"
+              className="glass flex-grow basis-[calc(33.333%-1rem)] min-w-[160px] p-5 flex items-center gap-4"
             >
               <span className={`inline-flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br ${color} text-white shrink-0`}>
                 <Icon size={24} weight="fill" />

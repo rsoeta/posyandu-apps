@@ -96,7 +96,7 @@ export default function ActivityDetail() {
         >
           <ArrowLeft size={18} weight="bold" /> Kembali ke Daftar Kegiatan
         </Link>
-        <div className="bg-white rounded-2xl p-8 text-center border border-purple-50">
+        <div className="glass rounded-2xl p-8 text-center ">
           <p className="text-gray-500 font-medium">Dokumentasi kegiatan tidak ditemukan.</p>
         </div>
       </section>
@@ -139,7 +139,7 @@ export default function ActivityDetail() {
       </div>
 
       {/* Konten Utama */}
-      <article className="bg-white rounded-2xl shadow-sm border border-purple-50 overflow-hidden flex flex-col">
+      <article className="glass rounded-2xl overflow-hidden flex flex-col">
         {/* Foto Dokumentasi Ber-watermark */}
         {imageUrl && (
           <div className="w-full bg-black max-h-[500px] flex items-center justify-center overflow-hidden relative">

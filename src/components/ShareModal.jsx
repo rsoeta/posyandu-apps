@@ -66,7 +66,7 @@ export default function ShareModal({ item, onClose }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-fadeIn">
-      <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl border border-purple-50 overflow-hidden flex flex-col max-h-[90vh]">
+      <div className="glass rounded-2xl w-full max-w-md shadow-2xl  overflow-hidden flex flex-col max-h-[90vh]">
         {/* Header Modal */}
         <div className="flex items-center justify-between p-4 sm:p-5 border-b border-gray-100">
           <div className="flex items-center gap-2">

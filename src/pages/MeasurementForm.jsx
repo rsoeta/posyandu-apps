@@ -114,7 +114,7 @@ export default function MeasurementForm() {
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="bg-white rounded-2xl p-5 shadow-sm border border-purple-50 flex flex-col gap-5">
+      <form onSubmit={handleSubmit} className="glass rounded-2xl p-5 flex flex-col gap-5">
         {fields.map(({ key, label, unit, placeholder }) => (
           <div key={key} className="flex flex-col gap-2">
             <label htmlFor={key} className="font-heading font-semibold text-gray-800 text-sm">
