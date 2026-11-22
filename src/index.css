@@ -261,5 +261,33 @@
   }
 }
 
+/* Wallpaper (Pane-inspired) */
+.wall {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(1200px 600px at 20% 10%, color-mix(in srgb, var(--accent) 18%, transparent), transparent 60%),
+              radial-gradient(900px 500px at 80% 90%, color-mix(in srgb, #FF4FA3 14%, transparent), transparent 60%),
+              var(--bg);
+}
+[data-theme=dark] .wall {
+  background: radial-gradient(1200px 600px at 20% 10%, color-mix(in srgb, var(--accent) 28%, transparent), transparent 60%),
+              radial-gradient(900px 500px at 80% 90%, color-mix(in srgb, #FF4FA3 20%, transparent), transparent 60%),
+              var(--bg);
+}
+/* SweetAlert2 glass */
+.posy-popup {
+  border-radius: 1rem !important;
+  padding: 1.25rem !important;
+  width: min(90vw, 380px) !important;
+  font-family: var(--font-body) !important;
+  background: var(--glass-thick) !important;
+  -webkit-backdrop-filter: blur(var(--blur-thick)) saturate(var(--sat)) !important;
+  backdrop-filter: blur(var(--blur-thick)) saturate(var(--sat)) !important;
+  box-shadow: var(--shadow-lift) !important;
+  border: 1px solid var(--rim-lo) !important;
+}
 /* Mobile tabbar spacing helper */
 .safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
+/* Reduced transparency already handled in .glass */

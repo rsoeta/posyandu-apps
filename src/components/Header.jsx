@@ -51,32 +51,7 @@ export default function Header() {
           </div>
         </Link>
 
-        <nav className="hidden md:flex items-center gap-1">
-          {navItems.map(({ to, label, icon: Icon }) => {
-            const active = location.pathname === to || (to !== '/' && location.pathname.startsWith(to))
-            return (
-              <Link
-                key={to}
-                to={to}
-                className={`flex items-center gap-2 px-3 min-h-[44px] rounded-full font-medium transition-colors ${
-                  active ? 'bg-[var(--fill)] text-[var(--accent-ink)]' : 'text-[var(--text-2)] hover:bg-[var(--fill-hover)] hover:text-[var(--text)]'
-                }`}
-              >
-                <Icon size={20} weight={active ? 'fill' : 'regular'} />
-                {label}
-              </Link>
-            )
-          })}
-          {isAdmin && (
-            <Link
-              to="/admin/posyandu"
-              className={`flex items-center gap-2 px-3 min-h-[44px] rounded-full font-medium transition-colors ${
-                location.pathname.startsWith('/admin') ? 'bg-[var(--fill)] text-[var(--accent-ink)]' : 'text-[var(--text-2)] hover:bg-[var(--fill-hover)] hover:text-[var(--text)]'
-              }`}
-            >
-              <Buildings size={20} /> Admin
-            </Link>
-          )}
+        <div className="hidden md:flex items-center gap-1">
           <button
             onClick={toggleTheme}
             className="flex items-center justify-center w-11 h-11 rounded-full text-[var(--text-2)] hover:bg-[var(--fill-hover)] transition-colors"
@@ -90,7 +65,7 @@ export default function Header() {
           >
             <SignOut size={20} /> Keluar
           </button>
-        </nav>
+        </div>
 
         <div className="md:hidden flex items-center gap-1">
           {isAdmin && (
