@@ -13,6 +13,14 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="Posyandu Ceria" />
+  <script>
+    (function (d) {
+      try {
+        var t = localStorage.getItem('posyandu:theme') || 'light';
+        d.dataset.theme = t;
+      } catch (e) { d.dataset.theme = 'light'; }
+    })(document.documentElement);
+  </script>
     <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png" />
