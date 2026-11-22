@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider } from './contexts/AuthContext'
+import { WorkspaceProvider } from './contexts/WorkspaceContext'
 import Layout from './components/Layout'
 import ProtectedRoute from './components/ProtectedRoute'
 import Login from './pages/Login'
@@ -18,8 +19,9 @@ export default function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <PwaInstallPrompt />
-        <Routes>
+        <WorkspaceProvider>
+          <PwaInstallPrompt />
+          <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           {/* Rute publik dokumentasi kegiatan untuk pengunjung umum / hasil bagikan */}
@@ -59,6 +61,7 @@ export default function App() {
             }
           />
         </Routes>
+        </WorkspaceProvider>
       </AuthProvider>
     </BrowserRouter>
   )
